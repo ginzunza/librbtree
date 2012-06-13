@@ -79,6 +79,42 @@ void                    rbtree_left_rotate(struct rbtree_node        **t,
   x->parent = y;
 }
 
+/**
+ * rbtree_right_rotate():
+ *
+ */
+void                    rbtree_right_rotate(struct rbtree_node        **t,
+					    struct rbtree_node        *x)
+{
+  struct rbtree_node    *y;
+
+  y = x->left;
+
+  x->left = y->right;
+
+  if (NULL != y->right) {
+    y->right->parent = x;
+  }
+
+  y->parent = x->parent;
+
+  if (NULL == x->parent) {
+    *t = y;
+  }
+  else {
+    if (x == x->parent->right) {
+      x->parent->right = y;
+    }
+    else {
+      x->parent->left = y;
+    }
+  }
+
+  y->right = x;
+  x->parent = y;
+}
+
+
 void                    rbtree_insert(struct rbtree_node        **t,
                                       struct rbtree_node        *x,
                                       rbtree_cmpf               f)
