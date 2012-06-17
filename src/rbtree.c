@@ -43,7 +43,7 @@ void                    rbtree_bin_insert(struct rbtree_node    **t,
     }
   }
 }
-
+	
 /**
  * rbtree_left_rotate():
  *

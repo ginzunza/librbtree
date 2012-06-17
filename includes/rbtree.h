@@ -1,3 +1,6 @@
+#if !defined(RBTREE_H)
+#define RBTREE_H
+
 #include <stdint.h>
 
 #define RED             0
@@ -22,3 +25,4 @@ int32_t                 rbtree_rec_height(struct rbtree_node    *t);
 struct rbtree_node        *rbtree_node_create(void *e);
 
 void                    rbtree_rec_print(struct rbtree_node       *t);
+#endif /* !RBTREE_H */
