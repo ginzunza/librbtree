@@ -61,6 +61,13 @@ int                     main(void)
 
   rbtree_rec_print_unordered(root);
 
+  rbtree_insert(&root, node_new(11), maxint);
+  rbtree_insert(&root, node_new(7), maxint);
+  rbtree_insert(&root, node_new(16), maxint);
+  rbtree_insert(&root, node_new(2), maxint);
+  rbtree_insert(&root, node_new(1), maxint);
+  rbtree_insert(&root, node_new(17), maxint);
+  rbtree_rec_print_unordered(root);
 
   /* rbtree_left_rotate(&root, root); */
   /* printf("root= %d !\n", *(int32_t *)(root->e));  */

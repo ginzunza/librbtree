@@ -118,7 +118,6 @@ void                    rbtree_insert(struct rbtree_node        **t,
     while ((x != *t) /* && x->parent->parent */ && (x->parent->color == RED)) {
       if (x->parent == x->parent->parent->left) {
 	y = x->parent->parent->right;
-
 	if (y && (y->color == RED)) {
 	  x->parent->color = BLACK;
 	  y->color = BLACK;
@@ -127,15 +126,14 @@ void                    rbtree_insert(struct rbtree_node        **t,
 	} else {
 	  if (x == x->parent->right) {
 	    x = x->parent;
-	    //FIXME: rbtree_left_rotate(t, n);
+	    rbtree_left_rotate(t, x);
 	  }
 	  x->parent->color = BLACK;
 	  x->parent->parent->color = RED;
-	  //FIXME: rbtree_right_rotate(t, x->parent->parent);
+	  rbtree_right_rotate(t, x->parent->parent);
 	}
       } else {
 	y = x->parent->parent->left;
-
 	if (y && (y->color == RED)) {
 	  x->parent->color = BLACK;
 	  y->color = BLACK;
@@ -144,11 +142,10 @@ void                    rbtree_insert(struct rbtree_node        **t,
 	} else {
 	  if (x == x->parent->left) {
 	    x = x->parent;
-	    //FIXME: rbtree_right_rotate(t, n);
+	    rbtree_right_rotate(t, x);
 	  }
 	  x->parent->color = BLACK;
 	  x->parent->parent->color = RED;
-	  printf("left rotate 1\n");
 	  rbtree_left_rotate(t, x->parent->parent);
 	}
       }
