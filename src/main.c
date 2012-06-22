@@ -14,10 +14,10 @@ int32_t                 maxint(void     *a,
   return 0;
 }
 
-struct rbtree_node                 *node_new(int32_t        v)
+struct rbtree_node      *node_new(int32_t        v)
 {
-  struct rbtree_node      *n;
-  int32_t                       *e;
+  struct rbtree_node    *n;
+  int32_t               *e;
 
   e = malloc(sizeof (int32_t));
   *e = v;
@@ -30,7 +30,7 @@ struct rbtree_node                 *node_new(int32_t        v)
 
 int                     main(void)
 {
-  struct rbtree_node      *root = NULL;
+  struct rbtree_node    *root = NULL;
 
   rbtree_rec_print(root);
 
@@ -42,10 +42,10 @@ int                     main(void)
   printf("-----------\n");
 
   rbtree_insert(&root,  node_new(3), maxint);
-rbtree_rec_print(root);
+  rbtree_rec_print(root);
 
   rbtree_insert(&root,  node_new(8), maxint);
-rbtree_rec_print(root);
+  rbtree_rec_print(root);
 
   rbtree_insert(&root,  node_new(9), maxint);
   rbtree_rec_print(root);
