@@ -49,15 +49,11 @@ void                    rbtree_left_rotate(struct rbtree_node        **t,
   struct rbtree_node    *y;
 
   y = x->right;
-
   x->right = y->left;
-
   if (NULL != y->left) {
     y->left->parent = x;
   }
-
   y->parent = x->parent;
-
   if (NULL == x->parent) {
     *t = y;
   } else if (x == x->parent->left) {
@@ -65,7 +61,6 @@ void                    rbtree_left_rotate(struct rbtree_node        **t,
   } else {
     x->parent->right = y;
   }
-
   y->left = x;
   x->parent = y;
 }
@@ -80,15 +75,11 @@ void                    rbtree_right_rotate(struct rbtree_node        **t,
   struct rbtree_node    *y;
 
   y = x->left;
-
   x->left = y->right;
-
   if (NULL != y->right) {
     y->right->parent = x;
   }
-
   y->parent = x->parent;
-
   if (NULL == x->parent) {
     *t = y;
   } else if (x == x->parent->right) {
@@ -96,7 +87,6 @@ void                    rbtree_right_rotate(struct rbtree_node        **t,
   } else {
     x->parent->left = y;
   }
-
   y->right = x;
   x->parent = y;
 }
@@ -114,40 +104,38 @@ void                    rbtree_insert(struct rbtree_node        **t,
   /* Standard binary tree insert. */
   rbtree_bin_insert(t, x, f);
 
-  if (x && x->parent && x->parent->parent) { //FIXME: get rid of it...
-    while ((x != *t) /* && x->parent->parent */ && (x->parent->color == RED)) {
-      if (x->parent == x->parent->parent->left) {
-	y = x->parent->parent->right;
-	if (y && (y->color == RED)) {
-	  x->parent->color = BLACK;
-	  y->color = BLACK;
-	  x->parent->parent->color = RED;
-	  x = x->parent->parent;
-	} else {
-	  if (x == x->parent->right) {
-	    x = x->parent;
-	    rbtree_left_rotate(t, x);
-	  }
-	  x->parent->color = BLACK;
-	  x->parent->parent->color = RED;
-	  rbtree_right_rotate(t, x->parent->parent);
-	}
+  while ((x != *t) && (x->parent->color == RED)) {
+    if (x->parent == x->parent->parent->left) {
+      y = x->parent->parent->right;
+      if (y && (y->color == RED)) {
+	x->parent->color = BLACK;
+	y->color = BLACK;
+	x->parent->parent->color = RED;
+	x = x->parent->parent;
       } else {
-	y = x->parent->parent->left;
-	if (y && (y->color == RED)) {
-	  x->parent->color = BLACK;
-	  y->color = BLACK;
-	  x->parent->parent->color = RED;
-	  x = x->parent->parent;
-	} else {
-	  if (x == x->parent->left) {
-	    x = x->parent;
-	    rbtree_right_rotate(t, x);
-	  }
-	  x->parent->color = BLACK;
-	  x->parent->parent->color = RED;
-	  rbtree_left_rotate(t, x->parent->parent);
+	if (x == x->parent->right) {
+	  x = x->parent;
+	  rbtree_left_rotate(t, x);
 	}
+	x->parent->color = BLACK;
+	x->parent->parent->color = RED;
+	rbtree_right_rotate(t, x->parent->parent);
+      }
+    } else {
+      y = x->parent->parent->left;
+      if (y && (y->color == RED)) {
+	x->parent->color = BLACK;
+	y->color = BLACK;
+	x->parent->parent->color = RED;
+	x = x->parent->parent;
+      } else {
+	if (x == x->parent->left) {
+	  x = x->parent;
+	  rbtree_right_rotate(t, x);
+	}
+	x->parent->color = BLACK;
+	x->parent->parent->color = RED;
+	rbtree_left_rotate(t, x->parent->parent);
       }
     }
   }
