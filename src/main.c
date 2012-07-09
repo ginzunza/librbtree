@@ -4,6 +4,8 @@
 #include "rbtree.h"
 #include "misc.h"
 
+extern struct rbtree_node sentinel;
+
 int32_t                 maxint(void     *a,
                                void     *b)
 {
@@ -13,6 +15,14 @@ int32_t                 maxint(void     *a,
 
   return 0;
 }
+
+int32_t                 cmpint(void     *a,
+                               void     *b)
+{
+  return *(int32_t *) b - *(int32_t *) a;
+}
+
+
 
 struct rbtree_node      *node_new(int32_t        v)
 {
@@ -30,7 +40,9 @@ struct rbtree_node      *node_new(int32_t        v)
 
 int                     main(void)
 {
-  struct rbtree_node    *root = NULL;
+  struct rbtree_node    *root = NIL;
+  struct rbtree_node    *n;
+  int i = 8;
 
   rbtree_rec_print(root);
 
@@ -67,6 +79,36 @@ int                     main(void)
   rbtree_insert(&root, node_new(2), maxint);
   rbtree_insert(&root, node_new(1), maxint);
   rbtree_insert(&root, node_new(17), maxint);
+  rbtree_rec_print_unordered(root);
+
+
+  n = node_new(13);
+  rbtree_insert(&root, n, maxint);
+  rbtree_rec_print_unordered(root);
+  printf("------------------------\n");
+  rbtree_remove(&root, n);
+  rbtree_rec_print_unordered(root);
+
+  printf("------------------------\n");
+  n = node_new(18);
+  rbtree_insert(&root, n, maxint);
+  n = node_new(19);
+  rbtree_insert(&root, n, maxint);
+  rbtree_rec_print_unordered(root);
+
+  rbtree_remove(&root, n);
+  rbtree_rec_print_unordered(root);
+
+  printf("------------------------\n");
+  n = node_new(12);
+  rbtree_insert(&root, n, maxint);
+  rbtree_rec_print_unordered(root);
+  rbtree_remove(&root, n);
+  rbtree_rec_print_unordered(root);
+
+  n = bst_search(&root, &i, cmpint);
+  printf("n->e = 0x%x\n", *(int *) n->e);
+  rbtree_remove(&root, n);
   rbtree_rec_print_unordered(root);
 
   /* rbtree_left_rotate(&root, root); */
