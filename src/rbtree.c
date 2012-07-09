@@ -342,7 +342,6 @@ void                    rbtree_remove(struct rbtree_node        **t,
     z->e = y->e;
   }
   if (y->color == BLACK) {
-    printf("FIXUP\n");
     rbtree_remove_fixup(t, x);
   }
 }
