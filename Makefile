@@ -2,7 +2,7 @@ PROJECT=	librbtree
 CC=		gcc
 LD=		ld
 INCL=		includes
-CFLAGS=		-I $(INCL) -g
+CFLAGS=		-W -Wall -I $(INCL) -g
 LDFLAGS=	-lc --dynamic-linker=/lib/ld-linux.so.2 -e main
 EXEC=		librbtree.out
 SRC=		$(wildcard src/*.c)

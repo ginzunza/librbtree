@@ -5,31 +5,58 @@
 #include "misc.h"
 
 
+struct rbtree_node sentinel = {NULL, NIL, NIL, NULL, BLACK};
 
-void                    rbtree_bin_insert(struct rbtree_node    **t,
-                                          struct rbtree_node    *x,
-                                          rbtree_cmpf           f)
+void                    rbtree_remove_fixup(struct rbtree_node        **t,
+                                            struct rbtree_node        *x);
+static
+void                    rbtree_insert_fixup(struct rbtree_node        **t,
+					    struct rbtree_node        *x);
+
+
+
+/**
+ * bst_search():
+ *
+ */
+struct rbtree_node	*bst_search(struct rbtree_node  **t,
+				    void		*x,
+				    rbtree_cmpf         f)
 {
-  struct rbtree_node    *y = NULL;
   struct rbtree_node    *w = *t;
 
-  /* Walk the tree with walker pointer. */
-  while (w != NULL) {
-    /* Save a reference to the walker pointer in the parent pointer. */
-    y = w;
-
-    /* Compare child and go to the next relevant tree node. */
-    if (f(w->e, x->e)) {
+  while (w != NIL && f(x, w->e)) {
+    if (f(x, w->e) > 0) {
       w = w->left;
     } else {
       w = w->right;
     }
   }
 
-  /* Set the parent tree node of the node to insert. */
-  x->parent = y;
+  return w;
+}
 
-  /* Set the child node of the parent node of the node to insert. */
+
+/**
+ * bst_insert():
+ *
+ */
+void                    rbtree_insert(struct rbtree_node    **t,
+				   struct rbtree_node    *x,
+				   rbtree_cmpf           f)
+{
+  struct rbtree_node    *y = NULL;
+  struct rbtree_node    *w = *t;
+
+  while (w != NIL) {
+    y = w;
+    if (f(w->e, x->e)) {
+      w = w->left;
+    } else {
+      w = w->right;
+    }
+  }
+  x->parent = y;
   if (y == NULL) {
     *t = x;
   } else if (f(y->e, x->e)) {
@@ -37,7 +64,37 @@ void                    rbtree_bin_insert(struct rbtree_node    **t,
   } else {
     y->right = x;
   }
+
+  rbtree_insert_fixup(t, x);
 }
+
+/* static inline */
+struct rbtree_node      *bst_min(struct rbtree_node *x)
+{
+  while (NIL != x->left) {
+    x = x->left;
+  }
+
+  return x;
+}
+
+/* static inline */
+struct rbtree_node      *bst_succ(struct rbtree_node *x)
+{
+  struct rbtree_node    *y;
+
+  if (NIL != x->right) {
+    return bst_min(x->right);
+  }
+  y = x->parent;
+  while ((NULL != y) && (x == y->right)) {
+    x = y;
+    y = y->parent;
+  }
+
+  return y;
+}
+
 
 /**
  * rbtree_left_rotate():
@@ -50,7 +107,7 @@ void                    rbtree_left_rotate(struct rbtree_node        **t,
 
   y = x->right;
   x->right = y->left;
-  if (NULL != y->left) {
+  if (NIL != y->left) {
     y->left->parent = x;
   }
   y->parent = x->parent;
@@ -76,7 +133,7 @@ void                    rbtree_right_rotate(struct rbtree_node        **t,
 
   y = x->left;
   x->left = y->right;
-  if (NULL != y->right) {
+  if (NIL != y->right) {
     y->right->parent = x;
   }
   y->parent = x->parent;
@@ -92,22 +149,18 @@ void                    rbtree_right_rotate(struct rbtree_node        **t,
 }
 
 
-void                    rbtree_insert(struct rbtree_node        **t,
-                                      struct rbtree_node        *x,
-                                      rbtree_cmpf               f)
+static
+void                    rbtree_insert_fixup(struct rbtree_node        **t,
+                                      struct rbtree_node        *x)
 {
   struct rbtree_node    *y;
 
-  /* Only red nodes are inserted in a red-black tree. */
   x->color = RED;
-
-  /* Standard binary tree insert. */
-  rbtree_bin_insert(t, x, f);
-
+  //bst_insert(t, x, f);
   while ((x != *t) && (x->parent->color == RED)) {
     if (x->parent == x->parent->parent->left) {
       y = x->parent->parent->right;
-      if (y && (y->color == RED)) {
+      if (y->color == RED) {
 	x->parent->color = BLACK;
 	y->color = BLACK;
 	x->parent->parent->color = RED;
@@ -123,7 +176,7 @@ void                    rbtree_insert(struct rbtree_node        **t,
       }
     } else {
       y = x->parent->parent->left;
-      if (y && (y->color == RED)) {
+      if (y->color == RED) {
 	x->parent->color = BLACK;
 	y->color = BLACK;
 	x->parent->parent->color = RED;
@@ -139,8 +192,6 @@ void                    rbtree_insert(struct rbtree_node        **t,
       }
     }
   }
-
-  /* Repaint the tree root. */
   (*t)->color = BLACK;
 }
 
@@ -151,7 +202,7 @@ void                    rbtree_insert(struct rbtree_node        **t,
 int32_t                 rbtree_rec_height(struct rbtree_node    *t)
 {
   /* Only black nodes are counted in a red-black tree height. */
-  if (t) {
+  if (NIL != t) {
     if (t->color == BLACK) {
       return MAX(1 + rbtree_rec_height(t->left), 1 + rbtree_rec_height(t->right));
     }
@@ -166,9 +217,10 @@ int32_t                 rbtree_rec_height(struct rbtree_node    *t)
  * rbtree_bin_bin_rec_height():
  *
  */
+/* FIXME: rename to bst_height() */
 int32_t                 rbtree_bin_rec_height(struct rbtree_node    *t)
 {
-  if (t) {
+  if (NIL != t) {
     return MAX(1 + rbtree_bin_rec_height(t->left), 1 + rbtree_bin_rec_height(t->right));
   }
 
@@ -184,8 +236,8 @@ struct rbtree_node        *rbtree_node_create(void *e)
   n = malloc(sizeof (struct rbtree_node));
 
   n->parent = NULL;
-  n->left = NULL;
-  n->right = NULL;
+  n->left = NIL;
+  n->right = NIL;
   n->e = e;
   n->color = BLACK;
 
@@ -195,26 +247,28 @@ struct rbtree_node        *rbtree_node_create(void *e)
 
 static void             rbtree_rec_print_aux(struct rbtree_node *t)
 {
-  if (t) {
+  if (NIL != t->left) {
     rbtree_rec_print_aux(t->left);
+  }
 
-    if (t->color == BLACK) {
-      printf("%d (BLACK, ", *(int32_t *)(t->e));
-    } else {
-      printf("%d (RED, ", *(int32_t *)(t->e));
-    }
+  if (t->color == BLACK) {
+    printf("%d (BLACK, ", *(int32_t *)(t->e));
+  } else {
+    printf("%d (RED, ", *(int32_t *)(t->e));
+  }
 
-    if (t->left) {
-      printf("%d, ", *(int32_t *)(t->left->e));
-    } else {
-      printf("NULL, ");
-    }
-    if (t->right) {
-      printf("%d)\n", *(int32_t *)(t->right->e));
-    } else {
-      printf("NULL)\n");
-    }
+  if (NIL != t->left) {
+    printf("%d, ", *(int32_t *)(t->left->e));
+  } else {
+    printf("NIL, ");
+  }
+  if (NIL != t->right) {
+    printf("%d)\n", *(int32_t *)(t->right->e));
+  } else {
+    printf("NIL)\n");
+  }
 
+  if (NIL != t->right) {
     rbtree_rec_print_aux(t->right);
   }
 }
@@ -222,7 +276,7 @@ static void             rbtree_rec_print_aux(struct rbtree_node *t)
 
 void                    rbtree_rec_print(struct rbtree_node       *t)
 {
-  if (!t) {
+  if (NIL == t) {
     printf("Empty tree!");
   } else {
     rbtree_rec_print_aux(t);
@@ -233,7 +287,7 @@ void                    rbtree_rec_print(struct rbtree_node       *t)
 
 static void             rbtree_rec_print_unordered_aux(struct rbtree_node *t)
 {
-  if (t) {
+  if (NIL != t) {
     if (t->color == BLACK) {
       printf("(%d, B, ", *(int32_t *)(t->e));
     } else {
@@ -251,10 +305,103 @@ static void             rbtree_rec_print_unordered_aux(struct rbtree_node *t)
 
 void                    rbtree_rec_print_unordered(struct rbtree_node       *t)
 {
-  if (!t) {
+  if (NIL == t) {
     printf("Empty tree!");
   } else {
     rbtree_rec_print_unordered_aux(t);
   }
   printf("\n");
+}
+
+
+void                    rbtree_remove(struct rbtree_node        **t,
+                                      struct rbtree_node        *z)
+{
+  struct rbtree_node    *x;
+  struct rbtree_node    *y;
+
+  if ((NIL == z->left) || (NIL == z->right)) {
+    y = z;
+  } else {
+    y = bst_succ(z);
+  }
+  if (NIL != y->left) {
+    x = y->left;
+  } else {
+    x = y->right;
+  }
+  x->parent = y->parent;
+  if (NULL == y->parent) {
+    *t = x;
+  } else if (y == y->parent->left) {
+    y->parent->left = x;
+  } else {
+    y->parent->right = x;
+  }
+  if (y != z) {
+    z->e = y->e;
+  }
+  if (y->color == BLACK) {
+    rbtree_remove_fixup(t, x);
+  }
+}
+
+
+void                    rbtree_remove_fixup(struct rbtree_node        **t,
+                                            struct rbtree_node        *x)
+{
+  struct rbtree_node    *w;
+
+  while ((x != *t) && (x->color == BLACK)) {
+    if (x == x->parent->left) {
+      w = x->parent->right;
+      if (w->color == RED) {
+        w->color = BLACK;
+        x->parent->color = RED;
+        rbtree_left_rotate(t, x->parent);
+        w = x->parent->right;
+      }
+      if ((w->left->color == BLACK) && (w->right->color == BLACK)) {
+        w->color = RED;
+        x = x->parent;
+      } else {
+        if (w->right->color == BLACK) {
+          w->left->color = BLACK;
+          w->color = RED;
+          rbtree_right_rotate(t, w);
+          w = x->parent->right;
+        }
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->right->color = BLACK;
+        rbtree_left_rotate(t, x->parent);
+        x = *t;
+      }
+    } else {
+      w = x->parent->left;
+      if (w->color == RED) {
+        w->color = BLACK;
+        x->parent->color = RED;
+        rbtree_right_rotate(t, x->parent);
+        w = x->parent->left;
+      }
+      if ((w->right->color == BLACK) && (w->left->color == BLACK)) {
+        w->color = RED;
+        x = x->parent;
+      } else {
+        if (w->left->color == BLACK) {
+          w->right->color = BLACK;
+          w->color = RED;
+          rbtree_left_rotate(t, w);
+          w = x->parent->left;
+        }
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->left->color = BLACK;
+        rbtree_right_rotate(t, x->parent);
+        x = *t;
+      }
+    }
+  }
+  x->color = BLACK;
 }
